@@ -17,7 +17,8 @@ exports.run = async(client, message, args) => {
         .setTimestamp()
         .setColor(settings.messageColors.colorSuccess)
         .setTitle(`Event: Purge Messages`)
-        .setDescription(`**__Moderator__**: <@${message.author.id}>\n\n**__Message__**: Successfully purged ${amountOfMessages} messages.`);
+        .setDescription(`**__Moderator__**: <@${message.author.id}>\n\n` +
+            `**__Message__**: Successfully purged ${amountOfMessages} messages.`);
         moderatorLog.send(embed);
     }
 };

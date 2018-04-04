@@ -9,7 +9,8 @@ exports.run = async(client, message) => {
         .setTimestamp()
         .setColor(settings.messageColors.colorSuccess)
         .setTitle(`Event: Ping`)
-        .setDescription(`**__Moderator__**: <@${message.author.id}>\n\n**__Message__**: Pong!`);
+        .setDescription(`**__Moderator__**: <@${message.author.id}>\n\n` +
+            `**__Message__**: Pong!`);
         botLog.send(embed);
     }
 };
