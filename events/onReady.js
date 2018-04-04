@@ -1,11 +1,14 @@
 // Requirements
 const chalk = require('chalk');
-const unmute = require('../commands/unmute.js');
+const unmute = require('../commands/muting/unmute.js');
+const removeInfraction = require('../commands/infractions/removeInfraction.js');
+const app = require('../app.js');
 
 module.exports = client => {
-    console.log(chalk.green(`### AICharacter is ready. ###`));
+    app.logMessage('AICharacter::BeginPlay()');
 
     client.setInterval(() => {
         unmute.tryUnmuteUsers(client);
+        removeInfraction.tryToRemoveInfraction(client);
     }, 5000);
 };

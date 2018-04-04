@@ -1,5 +1,5 @@
 // Requirements
-const settings = require('../settings.json');
+const settings = require('../../settings.json');
 const discord = require('discord.js');
 
 exports.run = async (client, message, args, permissionLevel) => {
@@ -16,7 +16,7 @@ exports.run = async (client, message, args, permissionLevel) => {
         client.commands.map(command => {
             // Only include commands that are available to this user's permissionlevel
             if (permissionLevel >= command.config.permissionLevel) {
-                embed.addField(`${settings.serverSettings.commandPrefix}${command.help.name}`, `${command.help.description}`);
+                embed.addField(`[${command.config.category}] ${settings.serverSettings.commandPrefix}${command.help.name}`, `${command.help.description}`);
             }
         });
         // Send the message to the actual user via direct message
@@ -28,14 +28,12 @@ exports.run = async (client, message, args, permissionLevel) => {
         if(client.commands.has(command)) {
             // Retrieve the actual command object
             const actualCommand = client.commands.get(command);
-
             // Don't send information about commands that aren't permitted
-            if(permissionLevel >= actualCommand.config.permissionLevel)
-            {
+            if(permissionLevel >= actualCommand.config.permissionLevel) {
                 var embed = new discord.RichEmbed()
-                .setTitle(`${settings.serverSettings.commandPrefix}${actualCommand.help.name}`)
+                .setTitle(`[${actualCommand.config.category}] ${settings.serverSettings.commandPrefix}${actualCommand.help.name}`)
                 .setColor(settings.messageColors.colorSuccess)
-                .setDescription(`${actualCommand.help.description}`);
+                .setDescription(`${actualCommand.help.description}`)
                 // If this command has aliases, post them too
                 if(actualCommand.config.aliases.length > 0) {
                     embed.addField('Aliases', `${actualCommand.config.aliases}`);
@@ -44,6 +42,24 @@ exports.run = async (client, message, args, permissionLevel) => {
                 // Send the message to the actual user via direct message
                 message.author.send(embed);
             }
+        } else if(client.categories.has(command)) { // Maybe we were searching for a category?
+            // Get the Array of commands saved for this category
+            const commands = client.categories.get(command);
+
+            var embed = new discord.RichEmbed()
+            .setTitle(`### Command List for Category [${command}] ###`)
+            .setColor(settings.messageColors.colorSuccess)
+            .setFooter(`[Use ${settings.serverSettings.commandPrefix}help <commandname> for more details.]`);
+            // Iterate over all commands and load the actual command object from it
+            commands.forEach(cmd => {
+                const actualCommand = client.commands.get(cmd);
+                // Only include commands that are available to this user's permissionlevel
+                if (permissionLevel >= actualCommand.config.permissionLevel) {
+                    embed.addField(`[${actualCommand.config.category}] ${settings.serverSettings.commandPrefix}${actualCommand.help.name}`, `${actualCommand.help.description}`);
+                }
+            });
+            // Send the message to the actual user via direct message
+            message.author.send(embed);
         }
     }
 };
@@ -51,6 +67,7 @@ exports.run = async (client, message, args, permissionLevel) => {
 exports.config = {
     enabled: true,
     guildOnly: false,
+    category: 'general',
     aliases: [],
     permissionLevel: 0
 };
@@ -58,5 +75,6 @@ exports.config = {
 exports.help = {
     name: 'help',
     description: 'Shows which commands are available to the user.',
-    usage: 'help <commandname (optional)>'
+    usage: 'help <filter (optional)>\n\n' +
+        '<filter (optional): Can either be used to show more information about a specific command or filter a category.'
 };

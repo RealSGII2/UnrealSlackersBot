@@ -19,24 +19,32 @@ exports.reload = async function(message, command) {
 
 // General Logging Event
 var logMessage = (message) => {
-    console.log(chalk.green(`### [${moment().format('DD-MM-YYYY HH:mm:ss')}] ${message} ###`));
+    console.log(chalk.green(`[${moment().format('DD-MM-YYYY HH:mm:ss')}] ### ${message} ###`));
 };
 exports.logMessage = logMessage;
 
-// Collections holding commands and aliases for commands
+// Collections holding commands, aliases and categories for commands
 client.commands = new discord.Collection();
 client.aliases = new discord.Collection();
+client.categories = new discord.Collection();
 
 // Reads all files found in the commands folder and fills in the collections
-fs.readdir("./commands/", (error, files) => {
+fs.readdir("./commands/", (error, categories) => {
     if (error) console.error(error);
-    logMessage(`Loading a total of ${files.length} commands.`);
-    files.forEach(file => {
-        let properties = require(`./commands/${file}`);
-        logMessage(`Loading Command: ${properties.help.name}.`);
-        client.commands.set(properties.help.name, properties);
-        properties.config.aliases.forEach(alias => {
-            client.aliases.set(alias, properties.help.name);
+    logMessage(`Found a total of ${categories.length} categories.`);
+    categories.forEach(category => {
+        fs.readdir(`./commands/${category}`, (error, files) => {
+            let commands = new Array();
+            files.forEach(file => {
+                let properties = require(`./commands/${category}/${file}`);
+                logMessage(`Loading Command: ${properties.help.name}.`);
+                commands.push(`${properties.help.name}`);
+                client.commands.set(properties.help.name, properties);
+                properties.config.aliases.forEach(alias => {
+                    client.aliases.set(alias, properties.help.name);
+                });
+            });
+            client.categories.set(category, commands);
         });
     });
 });

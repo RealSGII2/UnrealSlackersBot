@@ -1,7 +1,7 @@
 // Requirements
 const discord = require('discord.js');
-const settings = require('../settings.json');
-const app = require('../app.js');
+const settings = require('../../settings.json');
+const app = require('../../app.js');
 
 exports.run = (client, message, args) => {
     const botLog = client.channels.find('name', settings.logChannels.bot);
@@ -21,7 +21,7 @@ exports.run = (client, message, args) => {
             .setTimestamp()
             .setColor(settings.messageColors.colorError)
             .setTitle(`Event: Reload Command`)
-            .setDescription(`**__Moderator__**: <@${message.author.id}>\n\n` +
+            .setDescription(`**__Moderator__**: <@${message.author.id}>\n` +
                             `**__Message__**: Couldn't find the command [${settings.serverSettings.commandPrefix}${args[0]}].`);
             botLog.send(embed);
         }
@@ -32,7 +32,7 @@ exports.run = (client, message, args) => {
                 .setTimestamp()
                 .setColor(settings.messageColors.colorSuccess)
                 .setTitle(`Event: Reload Command`)
-                .setDescription(`**__Moderator__**: <@${message.author.id}>\n\n` +
+                .setDescription(`**__Moderator__**: <@${message.author.id}>\n` +
                                 `**__Message__**: Successfully reloaded command [${settings.serverSettings.commandPrefix}${command}].`);
                 botLog.send(embed);
             }
@@ -42,7 +42,8 @@ exports.run = (client, message, args) => {
                 .setTimestamp()
                 .setColor(settings.messageColors.colorError)
                 .setTitle(`Event: Reload Command`)
-                .setDescription(`**__Moderator__**: <@${message.author.id}>\n\n**__Message__**: Failed to reload command [${command}].`);
+                .setDescription(`**__Moderator__**: <@${message.author.id}>\n` +
+                    `**__Message__**: Failed to reload command [${command}].`);
                 botLog.send(embed);
             }
         });
@@ -52,6 +53,7 @@ exports.run = (client, message, args) => {
 exports.config = {
     enabled: true,
     guildOnly: false,
+    category: 'bot',
     aliases: ['r'],
     permissionLevel: 2
 };
@@ -59,5 +61,6 @@ exports.config = {
 exports.help = {
     name: 'reload',
     description: 'Tries to reload the file of the specified command. Can be used in case the file got updated or modified.',
-    usage: 'reload <commandname>'
+    usage: 'reload <commandname>\n\n' +
+        '<commandname>: Name of the command you wish to reload.'
 };

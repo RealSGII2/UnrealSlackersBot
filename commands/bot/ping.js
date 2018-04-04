@@ -1,6 +1,6 @@
 // Requirements
 const discord = require('discord.js');
-const settings = require('../settings.json');
+const settings = require('../../settings.json');
 
 exports.run = async(client, message) => {
     const botLog = client.channels.find('name', settings.logChannels.bot);
@@ -9,7 +9,7 @@ exports.run = async(client, message) => {
         .setTimestamp()
         .setColor(settings.messageColors.colorSuccess)
         .setTitle(`Event: Ping`)
-        .setDescription(`**__Moderator__**: <@${message.author.id}>\n\n` +
+        .setDescription(`**__Moderator__**: <@${message.author.id}>\n` +
             `**__Message__**: Pong!`);
         botLog.send(embed);
     }
@@ -18,6 +18,7 @@ exports.run = async(client, message) => {
 exports.config = {
     enabled: true,
     guildOnly: false,
+    category: 'bot',
     aliases: [],
     permissionLevel: 2
 };
