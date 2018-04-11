@@ -1,15 +1,27 @@
 // Requirements
-const discord = require('discord.js');
+const embedSender = require('../../utilities/embedSender.js');
 const settings = require('../../settings.json');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const moment = require('moment');
 
 exports.run = async(client, message, args) => {
-    if(args.length < 3) return;
+    if(args.length != 3) {
+        embedSender.sendMessageToUser(message, 'Mute Command', 'Please specify the user you want to mute, the mute time in seconds and the reason.\nE.g.: "~mute @user#1234 60 Spamming".');
+        return;
+    }
     // Member would be args[0], however we are not using it. Also shift the array to get rid of the argument
-    const member = message.mentions.members.first();
-    if(!member) return;
+    let member;
+    if(!message.mentions.members) {
+        embedSender.sendMessageToUser(message, 'Mute Command', 'Specifying a user is not supported in Direct Messages.');
+    } else {
+        member = message.mentions.members.first();
+        if(!member) {
+            embedSender.sendMessageToUser(message, 'Mute Command', 'Couldn\'t find the specified user.');
+            return;
+        }
+    }
+
     args.shift();
     // Retrieve the seconds by shifting the array again
     const seconds = args.shift();
@@ -33,18 +45,11 @@ exports.run = async(client, message, args) => {
             if(error) { console.log(error.stack); return; }
 
             // Post a notification to the moderator channel
-            const moderatorLog = client.channels.find('name', settings.logChannels.moderator);
-            if(moderatorLog) {
-                const embed = new discord.RichEmbed()
-                .setTimestamp()
-                .setColor(settings.messageColors.colorSuccess)
-                .setTitle(`Event: Update muted User`)
-                .setDescription(`**__Moderator__**: <@${message.author.id}>\n` +
-                                `**__Message__**: Muted user <@${member.id}> for additional ${seconds} seconds.\n` +
-                                `**__Reason__**: ${reason}\n` +
-                                `**__Muted Until__**: ${unMuteTime} (UTC)`);
-                moderatorLog.send(embed);
-            }
+            embedSender.logModerator(message, 'Mute Command | Updated User',
+                `__Message__: Muted user <@${member.id}> for ${seconds} seconds (starting now).\n` +
+                `__Reason__: ${reason}\n` +
+                `__Muted Until__: ${unMuteTime} (UTC)`
+            );
         });
     } else {
         // We only need to save the userID and the time at which they should get unmuted.
@@ -56,18 +61,11 @@ exports.run = async(client, message, args) => {
             // Add the mutedRole to the user, so they can't write anymore.
             member.addRole(mutedRole.id).then(() => {
                 // Post a notification to the moderator channel
-                const moderatorLog = client.channels.find('name', settings.logChannels.moderator);
-                if(moderatorLog) {
-                    const embed = new discord.RichEmbed()
-                    .setTimestamp()
-                    .setColor(settings.messageColors.colorSuccess)
-                    .setTitle(`Event: Muted User`)
-                    .setDescription(`**__Moderator__**: <@${message.author.id}>\n` +
-                                    `**__Message__**: Muted user <@${member.id}> for ${seconds} seconds.\n` +
-                                    `**__Reason__**: ${reason}\n` +
-                                    `**__Auto Unmute Time__**: ${unMuteTime} (UTC)`);
-                    moderatorLog.send(embed);
-                }
+                embedSender.logModerator(message, 'Mute Command',
+                    `__Message__: Muted user <@${member.id}> for ${seconds} seconds.\n` +
+                    `__Reason__: ${reason}\n` +
+                    `__Muted Until__: ${unMuteTime} (UTC)`
+                );
             }).catch(console.error);
         });
     }

@@ -1,6 +1,5 @@
 // Requirements
-const settings = require('../../settings.json');
-const discord = require('discord.js');
+const embedSender = require('../../utilities/embedSender.js');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const moment = require('moment');
@@ -25,17 +24,10 @@ exports.tryToRemoveInfraction = function (client) {
             database.run('DELETE FROM infractions WHERE entryID = ?;', [row.entryID], (error) => {
                 if(error) { console.log(error.stack); return; }
 
-                const moderatorLog = client.channels.find('name', settings.logChannels.moderator);
-                if(moderatorLog) {
-                    const embed = new discord.RichEmbed()
-                    .setTimestamp()
-                    .setColor(settings.messageColors.colorSuccess)
-                    .setTitle(`Event: Infraction Expired`)
-                    .setDescription(`**__Message__**: Infraction expired for <@${row.userID}>.\n` +
-                                    `**__Given By__**: <@${row.moderatorID}>\n` +
-                                    `**__Infraction Name__**: ${row.typeName}`);
-                    moderatorLog.send(embed);
-                }
+                embedSender.logModerator(message, 'Infraction Expired',
+                    `__Message__: Infraction expired for <@${row.userID}>.\n` +
+                    `__Given By__: <@${row.moderatorID}>\n` +
+                    `__Infraction Name__: ${row.typeName}`);
             });
         }
     });
@@ -44,7 +36,10 @@ exports.tryToRemoveInfraction = function (client) {
 };
 
 exports.run = async (client, message, args, permissionLevel) => {
-    if(args.length < 1) return;
+    if(args.length != 1) {
+        embedSender.sendMessageToUser(message, 'Remove Infraction Command', 'Please specify the ID of the infraction entry you wish to removed.\nE.g.: "~removeInfraction 42".\nYou can list all infractions with "~listInfractions".');
+        return;
+    }
     // Retrieve arguments
     const entryID = args.shift();
 
@@ -54,23 +49,20 @@ exports.run = async (client, message, args, permissionLevel) => {
         if(error) { console.log(error.stack); return; }
     });
     database.get('SELECT * FROM infractions WHERE entryID = ?;', [entryID], (error, row) => {
-        database.run('DELETE FROM infractions WHERE entryID = ?;', [entryID], (error) => {
-            if(error) { console.log(error.stack); return; }
+        if(row) {
+            database.run('DELETE FROM infractions WHERE entryID = ?;', [entryID], (error) => {
+                if(error) { console.log(error.stack); return; }
 
-            // Post a notification to the bot channel
-            const moderatorLog = client.channels.find('name', settings.logChannels.moderator);
-            if(moderatorLog) {
-                const embed = new discord.RichEmbed()
-                .setTimestamp()
-                .setColor(settings.messageColors.colorSuccess)
-                .setTitle(`Event: Remove Infraction`)
-                .setDescription(`**__Moderator__**: <@${message.author.id}>\n` +
-                    `**__User__**: <@${row.userID}>\n` +
-                    `**__Infraction Name__**: ${row.typeName}\n` +
-                    `**__Entry ID__**: ${entryID}`);
-                moderatorLog.send(embed);
-            }
-        });
+                // Post a notification to the bot channel
+                embedSender.logModerator(message, 'Remove Infraction Command',
+                    `__User__: <@${row.userID}>\n` +
+                    `__Infraction Name__: ${row.typeName}\n` +
+                    `__Entry ID__: ${entryID}`
+                );
+            });
+        } else {
+            embedSender.sendMessageToUser(message, 'Remove Infraction Command', `Couldn\'t find infraction with EntryID ${entryID}.`);
+        }
     });
 };
 

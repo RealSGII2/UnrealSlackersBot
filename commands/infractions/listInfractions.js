@@ -1,12 +1,20 @@
 // Requirements
-const settings = require('../../settings.json');
-const discord = require('discord.js');
+const embedSender = require('../../utilities/embedSender.js');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
 exports.run = async (client, message, args, permissionLevel) => {
     // Retrieve arguments
-    const member = message.mentions.members.first();
+    let member;
+    if(!message.mentions.members) {
+        embedSender.sendMessageToUser(message, 'List Infractions Command', 'Specifying a user is not supported in Direct Messages.');
+    } else {
+        member = message.mentions.members.first();
+        if(!member) {
+            embedSender.sendMessageToUser(message, 'List Infractions Command', 'Couldn\'t find the specified user.');
+            return;
+        }
+    }
 
     // __dirname leads to the commands folder
     const dbPath = path.resolve(__dirname, '../../database/main.db');
@@ -14,41 +22,43 @@ exports.run = async (client, message, args, permissionLevel) => {
         if(error) { console.log(error.stack); return; }
     });
 
-    let embed = new discord.RichEmbed()
-    .setTimestamp()
-    .setColor(settings.messageColors.colorSuccess)
-    .setTitle(`### List of Infractions ###`);
-
-    const moderatorLog = client.channels.find('name', settings.logChannels.moderator);
-
     if(member) {
         database.all('SELECT * FROM infractions WHERE userID = ?', [member.id], (error, rows) => {
             if(error) { console.log(error.stack); return; }
             // Go over all rows and add new fields into the embed for each
+            var infractionList = new Array();
             rows.forEach(row => {
-                embed.addField(`EntryID: ${row.entryID}`, `**__User__**: <@${row.userID}>\n` +
-                    `**__Infraction Name__**: ${row.typeName}\n` +
-                    `**__Date of Expire__**: ${expireTime}`, true);
+                const propertyKey = `EntryID: ${row.entryID}`;
+                const propertyVal = `__User__: <@${row.userID}>\n` +
+                    `__Infraction Name__: ${row.typeName}\n` +
+                    `__Date of Expire__: ${row.expireTime}`
+                infractionList.push({ 'propertyKey' : propertyKey, 'propertyVal' : propertyVal });
             });
 
-            // Post the Embed to the mod channel
-            if(moderatorLog) {
-                moderatorLog.send(embed);
-            }
+            // Only post the message if we actually have entries
+            if(rows.length > 0) {
+                // Send List to user
+                embedSender.sendListToUser(message, 'List of Infractions', '', infractionList);
+            };
         });
     } else {
         database.all('SELECT * FROM infractions', (error, rows) => {
             if(error) { console.log(error.stack); return; }
+
             // Go over all rows and add new fields into the embed for each
+            var infractionList = new Array();
             rows.forEach(row => {
-                embed.addField(`EntryID: ${row.entryID}`, `**__User__**: <@${row.userID}>\n` +
-                    `**__Infraction Name__**: ${row.typeName} \n` +
-                    `**__Date of Expire__**: ${expireTime}`, true);
+                const propertyKey = `EntryID: ${row.entryID}`;
+                const propertyVal = `__User__: <@${row.userID}>\n` +
+                    `__Infraction Name__: ${row.typeName}\n` +
+                    `__Date of Expire__: ${row.expireTime}`
+                infractionList.push({ 'propertyKey' : propertyKey, 'propertyVal' : propertyVal });
             });
 
-            // Post the Embed to the mod channel
-            if(moderatorLog) {
-                moderatorLog.send(embed);
+            // Only post the message if we actually have entries
+            if(rows.length > 0) {
+                // Send List to user
+                embedSender.sendListToUser(message, 'List of Infractions', '', infractionList);
             }
         });
     }

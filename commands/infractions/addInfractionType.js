@@ -1,13 +1,16 @@
 // Requirements
-const settings = require('../../settings.json');
-const discord = require('discord.js');
+const embedSender = require('../../utilities/embedSender.js');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
 exports.run = async (client, message, args, permissionLevel) => {
-    if(args.length < 3) return;
+    if(args.length < 4) {
+        embedSender.sendMessageToUser(message, 'Add Infraction Type Command', 'Please specify the name, points, days and description of the infraction type.\nE.g.: "~addInfractionType Spamming 2 90 For Spammers.".');
+        return;
+    }
     // Retrieve all single arguments and join the other args into the description
     const typeName = args.shift();
+    const lowerCastTypeName = typeName.toLowerCase();
     const points = args.shift();
     const days = args.shift();
     const description = args.join(' ');
@@ -18,23 +21,19 @@ exports.run = async (client, message, args, permissionLevel) => {
         if(error) { console.log(error.stack); return; }
     });
 
-    database.run('INSERT INTO infractionTypes (typeName, points, days, description) VALUES (?, ?, ?, ?);', [typeName, points, days, description], (error) => {
-        if(error) { console.log(error.stack); return; }
+    database.run('INSERT INTO infractionTypes (typeName, points, days, description) VALUES (?, ?, ?, ?);', [lowerCastTypeName, points, days, description], (error) => {
+        if(error) {
+            embedSender.sendMessageToUser(message, 'Add Infraction Type Command', 'Something went wrong when trying to add the new type to the database.\nAre you sure the type doesn\'t already exist?');
+            console.log(error.stack); return;
+        }
 
         // Post a notification to the bot channel
-        const botLog = client.channels.find('name', settings.logChannels.bot);
-        if(botLog) {
-            const embed = new discord.RichEmbed()
-            .setTimestamp()
-            .setColor(settings.messageColors.colorSuccess)
-            .setTitle(`Event: Add Infraction Type`)
-            .setDescription(`**__Moderator__**: <@${message.author.id}>\n` +
-                `**__Infraction Name__**: ${typeName}\n` +
-                `**__Points__**: ${points}\n` +
-                `**__Days__**: ${days}\n` +
-                `**__Description__**: ${description}`);
-            botLog.send(embed);
-        }
+        embedSender.logBot(message, 'Add Infraction Type',
+            `__Infraction Type Name__: ${lowerCaseTypeName}\n` +
+            `__Points__: ${points}\n` +
+            `__Days__: ${days}\n` +
+            `__Description__: ${description}`
+        );
     });
 
     database.close();

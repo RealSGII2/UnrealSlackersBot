@@ -1,13 +1,16 @@
 // Requirements
-const settings = require('../../settings.json');
-const discord = require('discord.js');
+const embedSender = require('../../utilities/embedSender.js');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
 exports.run = async (client, message, args, permissionLevel) => {
-    if(args.length < 1) return;
+    if(args.length != 1) {
+        embedSender.sendMessageToUser(message, 'Remove Infraction Type Command', 'Please specify the name of the infraction type you wish to remove.\nE.g.: "~removeInfractionType Spamming".\nYou can list all infraction types with "~listInfractionTypes".');
+        return;
+    }
     // Retrieve typeName
     const typeName = args.shift();
+    const lowerCaseTypeName = typeName.toLowerCase();
 
     // __dirname leads to the commands folder
     const dbPath = path.resolve(__dirname, '../../database/main.db');
@@ -16,19 +19,19 @@ exports.run = async (client, message, args, permissionLevel) => {
     });
 
     // TODO: Should we remove existing infractions too, or rather keep them?
-    database.run('DELETE FROM infractionTypes WHERE typeName = ?;', [typeName], (error) => {
+    database.get('SELECT * FROM infractionTypes WHERE typeName = ?', [lowerCaseTypeName], (error, row) => {
         if(error) { console.log(error.stack); return; }
 
-        // Post a notification to the bot channel
-        const botLog = client.channels.find('name', settings.logChannels.bot);
-        if(botLog) {
-            const embed = new discord.RichEmbed()
-            .setTimestamp()
-            .setColor(settings.messageColors.colorSuccess)
-            .setTitle(`Event: Remove Infraction Type`)
-            .setDescription(`**__Moderator__**: <@${message.author.id}>\n` +
-                `**__Infraction Name__**: ${typeName}`);
-            botLog.send(embed);
+        if(row) {
+            database.run('DELETE FROM infractionTypes WHERE typeName = ?;', [lowerCaseTypeName], (error) => {
+                if(error) { console.log(error.stack); return; }
+
+                // Post a notification to the bot channel
+                embedSender.logBot(message, 'Remove Infraction Type Command',
+                    `__Infraction Type Name__: ${lowerCaseTypeName}`);
+            });
+        } else {
+            embedSender.sendMessageToUser(message, 'Remove Infraction Type Command', `Couldn\'t delete infraction type [${typeName}].\nAre you sure this type exists?\nYou can list all infraction types with "~listInfractionTypes".`);
         }
     });
 

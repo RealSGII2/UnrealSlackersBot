@@ -1,51 +1,33 @@
 // Requirements
-const discord = require('discord.js');
+const embedSender = require('../../utilities/embedSender.js');
 const settings = require('../../settings.json');
 const app = require('../../app.js');
 
 exports.run = (client, message, args) => {
-    const botLog = client.channels.find('name', settings.logChannels.bot);
+    if(args.length != 1) {
+        embedSender.sendMessageToUser(message, 'Reload Command', 'Please specify the command you want to reload.\nE.g.: "~reload ping".');
+        return;
+    }
 
     // Search the command via command and aliases
-    let command;
-    if (client.commands.has(args[0])) {
-        command = args[0];
+    const command = args[0];
+    const lowerCaseCommand = command.toLowerCase();
+    let actualCommand;
+    if (client.commands.has(lowerCaseCommand)) {
+        actualCommand = lowerCaseCommand;
     }
-    else if (client.aliases.has(args[0])) {
-        command = client.aliases.get(args[0]);
+    else if (client.aliases.has(lowerCaseCommand)) {
+        actualCommand = client.aliases.get(lowerCaseCommand);
     }
     // If not found, notify the bog log
-    if (!command) {
-        if(botLog) {
-            const embed = new discord.RichEmbed()
-            .setTimestamp()
-            .setColor(settings.messageColors.colorError)
-            .setTitle(`Event: Reload Command`)
-            .setDescription(`**__Moderator__**: <@${message.author.id}>\n` +
-                            `**__Message__**: Couldn't find the command [${settings.serverSettings.commandPrefix}${args[0]}].`);
-            botLog.send(embed);
-        }
+    if (!actualCommand) {
+        embedSender.sendMessageToUser(message, 'Reload Command', `Couldn't find the command [${settings.serverSettings.commandPrefix}${lowerCaseCommand}].`);
     } else { // If found, tell the client to reload the commandfile
-        app.reload(message, command).then(() => {
-            if(botLog) {
-                const embed = new discord.RichEmbed()
-                .setTimestamp()
-                .setColor(settings.messageColors.colorSuccess)
-                .setTitle(`Event: Reload Command`)
-                .setDescription(`**__Moderator__**: <@${message.author.id}>\n` +
-                                `**__Message__**: Successfully reloaded command [${settings.serverSettings.commandPrefix}${command}].`);
-                botLog.send(embed);
-            }
+        app.reload(message, actualCommand).then(() => {
+            embedSender.logBot(message, 'Reload Command', `Successfully reloaded command [${settings.serverSettings.commandPrefix}${lowerCaseCommand}].`)
         }).catch(error => {
-            if(botLog) {
-                const embed = new discord.RichEmbed()
-                .setTimestamp()
-                .setColor(settings.messageColors.colorError)
-                .setTitle(`Event: Reload Command`)
-                .setDescription(`**__Moderator__**: <@${message.author.id}>\n` +
-                    `**__Message__**: Failed to reload command [${command}].`);
-                botLog.send(embed);
-            }
+            console.log(error.stack);
+            embedSender.sendMessageToUser(message, 'Reload Command', `Failed to reload command [${settings.serverSettings.commandPrefix}${lowerCaseCommand}].`);
         });
     }
 };

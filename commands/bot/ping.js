@@ -1,18 +1,8 @@
 // Requirements
-const discord = require('discord.js');
-const settings = require('../../settings.json');
+const embedSender = require('../../utilities/embedSender.js');
 
 exports.run = async(client, message) => {
-    const botLog = client.channels.find('name', settings.logChannels.bot);
-    if(botLog) {
-        const embed = new discord.RichEmbed()
-        .setTimestamp()
-        .setColor(settings.messageColors.colorSuccess)
-        .setTitle(`Event: Ping`)
-        .setDescription(`**__Moderator__**: <@${message.author.id}>\n` +
-            `**__Message__**: Pong!`);
-        botLog.send(embed);
-    }
+    embedSender.logBot(message, 'Ping', 'Pong!');
 };
 
 exports.config = {

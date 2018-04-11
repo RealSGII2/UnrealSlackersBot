@@ -10,7 +10,8 @@ module.exports = message => {
     const client = message.client;
 
     // Retrieve the command and arguments that were passed
-    const command = message.content.split(" ")[0].slice(settings.serverSettings.commandPrefix.length);
+    let caseSenstiveCommand = message.content.split(" ")[0].slice(settings.serverSettings.commandPrefix.length);
+    const command = caseSenstiveCommand.toLowerCase();
     const args = message.content.split(" ").slice(1);
 
     // Get the Permission Level of this user
@@ -25,12 +26,14 @@ module.exports = message => {
         }
         // If found, forward the call
         if (actualCommand) {
-            if (permissionLevel < actualCommand.config.permissionLevel) return;
+            if (permissionLevel >= actualCommand.config.permissionLevel) {
                 actualCommand.run(client, message, args, permissionLevel);
+                if(message.guild) {
+                    message.delete(1500).catch(console.error);
+                }
+            }
         }
     }).catch(error => {
         console.log(error.stack);
     });
-
-
 };

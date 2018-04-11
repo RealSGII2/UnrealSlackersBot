@@ -1,6 +1,6 @@
 // Requirements
-const chalk = require('chalk');
+const app = require('../app.js');
 
 module.exports = client => {
-    console.log(chalk.green('### AICharacter disconnected. ###'));
+    app.logMessage('AICharacter::EndPlay()');
 };

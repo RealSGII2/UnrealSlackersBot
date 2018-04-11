@@ -1,12 +1,22 @@
 // Requirements
-const discord = require('discord.js');
-const settings = require('../../settings.json');
+const embedSender = require('../../utilities/embedSender.js');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
 exports.run = async (client, message, args) => {
     // Try to retrieve the moderator if passed
-    const moderator = message.mentions.members.first();
+    let moderator;
+    if(args.length === 1 && !message.mentions.members) {
+        embedSender.sendMessageToUser(message, 'Who\'s Muted Command', 'Specifying a user is not supported in Direct Messages.');
+    } else if(message.mentions.members) {
+        moderator = message.mentions.members.first();
+        if(!moderator) {
+            embedSender.sendMessageToUser(message, 'Who\'s Muted Command', 'Couldn\'t find the specified moderator.');
+            return;
+        }
+    }
+
+    // TODO: CHECK THAT USER IS ACTUALLY A MODERATOR AND RETURN ERROR IF NOT
 
     // __dirname leads to the commands folder
     const dbPath = path.resolve(__dirname, '../../database/main.db');
@@ -14,43 +24,42 @@ exports.run = async (client, message, args) => {
         if(error) { console.log(error.stack); return; }
     });
 
-    let embed = new discord.RichEmbed()
-    .setTimestamp()
-    .setColor(settings.messageColors.colorSuccess)
-    .setTitle(`### List of Muted Users ###`);
-
-    const moderatorLog = client.channels.find('name', settings.logChannels.moderator);
-
-    let results;
     if(moderator) {
         database.all('SELECT * FROM mutedUsers WHERE moderatorID = ?', [moderator.id], (error, rows) => {
             if(error) { console.log(error.stack); return; }
             // Go over all rows and add new fields into the embed for each
+            var mutedUserList = new Array();
             rows.forEach(row => {
-                embed.addField(`EntryID: ${row.entryID}`, `**__Muted User__**: <@${row.userID}>\n` +
-                    `**__For Reason__**: ${row.reason} \n` +
-                    `**__Muted Until__**: ${row.unMuteTime} `, true);
+                const propertyKey = `EntryID: ${row.entryID}`;
+                const propertyVal = `__Muted User__: <@${row.userID}>\n` +
+                    `__By Moderator__: <@${row.moderatorID}>\n` +
+                    `__For Reason__: ${row.reason} \n` +
+                    `__Muted Until__: ${row.unMuteTime}`;
+                mutedUserList.push({ 'propertyKey' : propertyKey, 'propertyVal' : propertyVal });
             });
 
             // Post the Embed to the mod channel
-            if(moderatorLog) {
-                moderatorLog.send(embed);
+            if(rows.length > 0) {
+                embedSender.sendListToUser(message, 'List of Muted Users', '', mutedUserList);
             }
         });
     } else {
         database.all('SELECT * FROM mutedUsers', (error, rows) => {
             if(error) { console.log(error.stack); return; }
             // Go over all rows and add new fields into the embed for each
+            var mutedUserList = new Array();
             rows.forEach(row => {
-                embed.addField(`EntryID: ${row.entryID}`, `**__Muted User__**: <@${row.userID}>\n` +
-                    `**__By Moderator__**: <@${row.moderatorID}>\n` +
-                    `**__For Reason__**: ${row.reason}\n` +
-                    `**__Muted Until__**: ${row.unMuteTime} `, true);
+                const propertyKey = `EntryID: ${row.entryID}`;
+                const propertyVal = `__Muted User__: <@${row.userID}>\n` +
+                    `__By Moderator__: <@${row.moderatorID}>\n` +
+                    `__For Reason__: ${row.reason} \n` +
+                    `__Muted Until__: ${row.unMuteTime}`;
+                mutedUserList.push({ 'propertyKey' : propertyKey, 'propertyVal' : propertyVal });
             });
 
             // Post the Embed to the mod channel
-            if(moderatorLog) {
-                moderatorLog.send(embed);
+            if(rows.length > 0) {
+                embedSender.sendListToUser(message, 'List of Muted Users', '', mutedUserList);
             }
         });
     }

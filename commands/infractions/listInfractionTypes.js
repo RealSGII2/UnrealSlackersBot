@@ -1,6 +1,5 @@
 // Requirements
-const settings = require('../../settings.json');
-const discord = require('discord.js');
+const embedSender = require('../../utilities/embedSender.js');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
@@ -11,26 +10,21 @@ exports.run = async (client, message, args, permissionLevel) => {
         if(error) { console.log(error.stack); return; }
     });
 
-    let embed = new discord.RichEmbed()
-    .setTimestamp()
-    .setColor(settings.messageColors.colorSuccess)
-    .setTitle(`### List of Infraction Types ###`);
-
-    const botLog = client.channels.find('name', settings.logChannels.bot);
-
     database.all('SELECT * FROM infractionTypes', (error, rows) => {
         if(error) { console.log(error.stack); return; }
         // Go over all rows and add new fields into the embed for each
+        var infractionTypeList = new Array();
         rows.forEach(row => {
-            embed.addField(`EntryID: ${row.entryID}`, `**__Infraction Name__**: ${row.typeName}\n` +
-                `**__Points__**: ${row.points}\n` +
-                `**__Days__**: ${row.days}\n` +
-                `**__Description__**: ${row.description}`, true);
+            const propertyKey = `EntryID: ${row.entryID}`;
+            const propertyVal = `__Infraction Name__: ${row.typeName}\n` +
+                `__Points__: ${row.points}\n` +
+                `__Days__: ${row.days}\n` +
+                `__Description__: ${row.description}`;
+            infractionTypeList.push({ 'propertyKey' : propertyKey, 'propertyVal' : propertyVal });
         });
 
-        // Post the Embed to the mod channel
-        if(botLog) {
-            botLog.send(embed);
+        if(rows.length > 0) {
+            embedSender.sendListToUser(message, 'List of Infraction Types', '', infractionTypeList);
         }
     });
 

@@ -13,8 +13,10 @@ client.login(settings.serverSettings.botToken);
 
 // Function to manually reload a command file
 exports.reload = async function(message, command) {
-    delete require.cache[require.resolve('./commands/' + command)];
-    let commandFile = require('./commands/' + command);
+    const actualCommand = client.commands.get(command);
+    const category = actualCommand.config.category;
+    delete require.cache[require.resolve(`./commands/${category}/${command}`)];
+    let commandFile = require(`./commands/${category}/${command}`);
 };
 
 // General Logging Event
@@ -38,10 +40,12 @@ fs.readdir("./commands/", (error, categories) => {
             files.forEach(file => {
                 let properties = require(`./commands/${category}/${file}`);
                 logMessage(`Loading Command: ${properties.help.name}.`);
-                commands.push(`${properties.help.name}`);
-                client.commands.set(properties.help.name, properties);
+                let caseSensitiveName = `${properties.help.name}`;
+                let lowerCastName = caseSensitiveName.toLowerCase();
+                commands.push(lowerCastName);
+                client.commands.set(lowerCastName, properties);
                 properties.config.aliases.forEach(alias => {
-                    client.aliases.set(alias, properties.help.name);
+                    client.aliases.set(alias, lowerCastName);
                 });
             });
             client.categories.set(category, commands);

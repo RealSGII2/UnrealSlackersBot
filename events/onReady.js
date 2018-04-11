@@ -1,5 +1,4 @@
 // Requirements
-const chalk = require('chalk');
 const unmute = require('../commands/muting/unmute.js');
 const removeInfraction = require('../commands/infractions/removeInfraction.js');
 const app = require('../app.js');
