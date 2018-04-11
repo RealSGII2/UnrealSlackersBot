@@ -12,11 +12,11 @@ The event file simply overrides it's exports to react to the call. Check out '/e
 
 **Commands**
 
-Commands are loaded through 'app.js'. Each command is represented by a script in '/commands/commandName.js'.
-Commands are running async and have to export 'run'. They are called through the '/events/onMessage.js' event, given the command was found. A list of commands is generated in 'app.js', by reading all scriptfiles from '/commands/'.
+Commands are loaded through 'app.js'. Each command is represented by a script in '/commands/<category>commandName.js'.
+Commands are running async and have to export 'run'. They are called through the '/events/onMessage.js' event, given the command was found. A list of commands is generated in 'app.js', by reading all scriptfiles from '/commands/<category>/'.
 In addition to 'run', a command also needs to export 'config' and 'help'.
 
-* Config is used to enable/disable, set aliases and permissionLevel.
+* Config is used to enable/disable, set aliases, category and permissionLevel.
 * help is used for the 'commands/help.js' script to show a user all available commands (limited to permissionLevel).
 
 **Database**
@@ -45,10 +45,31 @@ Currently Supported Events
 Currently Supported Commands
 ----------------------------
 
-* help - Listes all commands or specific info to a specified command.
+**Bot Category**
+
 * ping - Pong.
-* purge - Removes the x amount of messages in the it was posted in.
 * reload - Reloads a command file requirement, in case a command was changed and the bot shouldn't be stopped.
+
+**General Category**
+
+* help - Listes all commands or specific info to a specified command.
+
+**Utility Category**
+
+* purge - Removes the x amount of messages in the it was posted in.
+
+**Muting Category**
+
 * mute - Mutes the specified user for x seconds and reason.
 * unmute - Unmutes a muted user.
 * whosmuted - Lists all muted users or the muted users filted by a specified moderator.
+
+**Infractions Category**
+
+* addInfraction
+* removeInfraction
+* listInfractions
+* addInfractionType
+* removeInfractionType
+* updateInfractionType
+* listInfractionTypes
