@@ -12,6 +12,8 @@ module.exports = message => {
         if(permissionLevel < 2) {
             embedSender.logMessage(message, 'User deleted a message',
                 `__User__: <@${message.author.id}>\n` +
+                `__Created at__: ${message.createdAt}\n` +
+                `__Channel__ : ${message.channel.name}\n` +
                 `__Message__: ${message.content}`
             );
         }

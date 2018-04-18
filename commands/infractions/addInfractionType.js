@@ -5,12 +5,12 @@ const path = require('path');
 
 exports.run = async (client, message, args, permissionLevel) => {
     if(args.length < 4) {
-        embedSender.sendMessageToUser(message, 'Add Infraction Type Command', 'Please specify the name, points, days and description of the infraction type.\nE.g.: "~addInfractionType Spamming 2 90 For Spammers.".');
+        embedSender.sendMessageToAuthor(message, 'Add Infraction Type Command', 'Please specify the name, points, days and description of the infraction type.\nE.g.: "~addInfractionType Spamming 2 90 For Spammers.".');
         return;
     }
     // Retrieve all single arguments and join the other args into the description
     const typeName = args.shift();
-    const lowerCastTypeName = typeName.toLowerCase();
+    const lowerCaseTypeName = typeName.toLowerCase();
     const points = args.shift();
     const days = args.shift();
     const description = args.join(' ');
@@ -21,9 +21,9 @@ exports.run = async (client, message, args, permissionLevel) => {
         if(error) { console.log(error.stack); return; }
     });
 
-    database.run('INSERT INTO infractionTypes (typeName, points, days, description) VALUES (?, ?, ?, ?);', [lowerCastTypeName, points, days, description], (error) => {
+    database.run('INSERT INTO infractionTypes (typeName, points, days, description) VALUES (?, ?, ?, ?);', [lowerCaseTypeName, points, days, description], (error) => {
         if(error) {
-            embedSender.sendMessageToUser(message, 'Add Infraction Type Command', 'Something went wrong when trying to add the new type to the database.\nAre you sure the type doesn\'t already exist?');
+            embedSender.sendMessageToAuthor(message, 'Add Infraction Type Command', 'Something went wrong when trying to add the new type to the database.\nAre you sure the type doesn\'t already exist?');
             console.log(error.stack); return;
         }
 
@@ -40,7 +40,7 @@ exports.run = async (client, message, args, permissionLevel) => {
 };
 
 exports.config = {
-    enabled: true,
+    enabled: false,
     guildOnly: false,
     category: 'infractions',
     aliases: [],

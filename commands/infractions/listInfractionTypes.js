@@ -24,7 +24,7 @@ exports.run = async (client, message, args, permissionLevel) => {
         });
 
         if(rows.length > 0) {
-            embedSender.sendListToUser(message, 'List of Infraction Types', '', infractionTypeList);
+            embedSender.sendListToAuthor(message, 'List of Infraction Types', '', infractionTypeList);
         }
     });
 
@@ -32,7 +32,7 @@ exports.run = async (client, message, args, permissionLevel) => {
 };
 
 exports.config = {
-    enabled: true,
+    enabled: false,
     guildOnly: false,
     category: 'infractions',
     aliases: [],

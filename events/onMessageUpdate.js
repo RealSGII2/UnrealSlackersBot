@@ -12,6 +12,8 @@ module.exports = (oldMessage, newMessage) => {
         if(permissionLevel < 2) {
             embedSender.logMessage(oldMessage, 'User edited a message',
                 `__User__: <@${oldMessage.author.id}>\n` +
+                `__Created at__: ${oldMessage.createdAt}\n` +
+                `__Channel__ : ${oldMessage.channel.name}\n` +
                 `__Old Message__: ${oldMessage.content}\n` +
                 `__New Message__: ${newMessage.content}`
             );

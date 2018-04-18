@@ -1,7 +1,17 @@
 const discord = require('discord.js');
 const settings = require('../settings.json');
 
-exports.sendMessageToUser = function(message, eventTitle, eventMessage) {
+exports.sendMessageToUser = function (user, eventTitle, eventMessage) {
+    const title = `--- Event: ${eventTitle} ---`;
+    const description = `${eventMessage}`;
+    var embed = new discord.RichEmbed()
+    .setTitle(title)
+    .setColor(settings.messageColors.colorWarning)
+    .setDescription(description);
+    user.send(embed);
+};
+
+exports.sendMessageToAuthor = function(message, eventTitle, eventMessage) {
     const author = message.author;
     const title = `--- Event: ${eventTitle} ---`;
     const description = `${eventMessage}`;
@@ -12,7 +22,7 @@ exports.sendMessageToUser = function(message, eventTitle, eventMessage) {
     author.send(embed);
 };
 
-exports.sendInlineListToUser = function(message, listName, listFooter, listProperties) {
+exports.sendInlineListToAuthor = function(message, listName, listFooter, listProperties) {
     const author = message.author;
     var embed = new discord.RichEmbed()
     .setTitle(`--- ${listName} ---`)
@@ -27,7 +37,7 @@ exports.sendInlineListToUser = function(message, listName, listFooter, listPrope
     author.send(embed);
 };
 
-exports.sendListToUser = function(message, listName, listFooter, listProperties) {
+exports.sendListToAuthor = function(message, listName, listFooter, listProperties) {
     const author = message.author;
     var embed = new discord.RichEmbed()
     .setTitle(`--- ${listName} ---`)

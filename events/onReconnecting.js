@@ -2,5 +2,5 @@
 const app = require('../app.js');
 
 module.exports = client => {
-    app.logMessage('### AICharacter reconnected. ###');
+    app.logMessage('AICharacter reconnected.');
 };

@@ -1,5 +1,6 @@
 // Requirements
 const settings = require('../settings.json');
+const app = require('../app.js');
 
 module.exports = message => {
     // Make sure, that we only filter messages that are starting with the proper prefix
@@ -27,7 +28,10 @@ module.exports = message => {
         // If found, forward the call
         if (actualCommand) {
             if (permissionLevel >= actualCommand.config.permissionLevel) {
-                actualCommand.run(client, message, args, permissionLevel);
+                if(actualCommand.config.enabled == true) {
+                    actualCommand.run(client, message, args, permissionLevel);
+                }
+
                 if(message.guild) {
                     message.delete(1500).catch(console.error);
                 }

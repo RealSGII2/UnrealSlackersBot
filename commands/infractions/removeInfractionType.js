@@ -5,7 +5,7 @@ const path = require('path');
 
 exports.run = async (client, message, args, permissionLevel) => {
     if(args.length != 1) {
-        embedSender.sendMessageToUser(message, 'Remove Infraction Type Command', 'Please specify the name of the infraction type you wish to remove.\nE.g.: "~removeInfractionType Spamming".\nYou can list all infraction types with "~listInfractionTypes".');
+        embedSender.sendMessageToAuthor(message, 'Remove Infraction Type Command', 'Please specify the name of the infraction type you wish to remove.\nE.g.: "~removeInfractionType Spamming".\nYou can list all infraction types with "~listInfractionTypes".');
         return;
     }
     // Retrieve typeName
@@ -31,7 +31,7 @@ exports.run = async (client, message, args, permissionLevel) => {
                     `__Infraction Type Name__: ${lowerCaseTypeName}`);
             });
         } else {
-            embedSender.sendMessageToUser(message, 'Remove Infraction Type Command', `Couldn\'t delete infraction type [${typeName}].\nAre you sure this type exists?\nYou can list all infraction types with "~listInfractionTypes".`);
+            embedSender.sendMessageToAuthor(message, 'Remove Infraction Type Command', `Couldn\'t delete infraction type [${typeName}].\nAre you sure this type exists?\nYou can list all infraction types with "~listInfractionTypes".`);
         }
     });
 
@@ -39,7 +39,7 @@ exports.run = async (client, message, args, permissionLevel) => {
 };
 
 exports.config = {
-    enabled: true,
+    enabled: false,
     guildOnly: false,
     category: 'infractions',
     aliases: [],

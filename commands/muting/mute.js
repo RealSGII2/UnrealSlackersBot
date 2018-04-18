@@ -1,28 +1,36 @@
 // Requirements
 const embedSender = require('../../utilities/embedSender.js');
 const settings = require('../../settings.json');
+const base = require('../../utilities/base.js');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const moment = require('moment');
 
 exports.run = async(client, message, args) => {
-    if(args.length != 3) {
-        embedSender.sendMessageToUser(message, 'Mute Command', 'Please specify the user you want to mute, the mute time in seconds and the reason.\nE.g.: "~mute @user#1234 60 Spamming".');
+    if(args.length < 3) {
+        embedSender.sendMessageToAuthor(message, 'Mute Command', 'Please specify the user you want to mute, the mute time in seconds and the reason.\nE.g.: "~mute @user#1234 60 Spamming".');
         return;
     }
-    // Member would be args[0], however we are not using it. Also shift the array to get rid of the argument
+    // Test first, if the mention isn't broken/incorrect. Discord happens to tag wrong people on big Server
+    const memberName = args.shift();
+    if(!base.isMentionValid(memberName)) {
+        embedSender.sendMessageToAuthor(message, 'Mute Command', 'It seems like the \'mention\' part of your message wasn\'t correct.\n' +
+            'This can happen on Servers that have a lot of members. Retry later by trying to tag the person again.\n\n' +
+            `Your message was: ${message.content}`);
+        return;
+    }
     let member;
     if(!message.mentions.members) {
-        embedSender.sendMessageToUser(message, 'Mute Command', 'Specifying a user is not supported in Direct Messages.');
+        embedSender.sendMessageToAuthor(message, 'Mute Command', 'Specifying a user is not supported in Direct Messages.');
     } else {
         member = message.mentions.members.first();
         if(!member) {
-            embedSender.sendMessageToUser(message, 'Mute Command', 'Couldn\'t find the specified user.');
+            embedSender.sendMessageToAuthor(message, 'Mute Command', 'Couldn\'t find the specified user.');
             return;
         }
     }
 
-    args.shift();
+    //args.shift();
     // Retrieve the seconds by shifting the array again
     const seconds = args.shift();
     // All remaining arguments make up the reason
@@ -35,7 +43,7 @@ exports.run = async(client, message, args) => {
     });
 
     // Create the time in a format that sqlite supports. Also add the seconds from the actual command to it.
-    const unMuteTime = moment().add(seconds, 'seconds').utc().format('YYYY-MM-DD HH:mm:ss');
+    const unMuteTime = moment().add(seconds, 'seconds').utc().format('YYYY-MM-DD HH:mm:ss Z');
 
     // User is already muted, so update the entry
     const mutedRole = message.guild.roles.find('name', settings.roles.mutedRole);
@@ -43,6 +51,11 @@ exports.run = async(client, message, args) => {
         // Find the entry of this user
         database.run('UPDATE mutedUsers SET unMuteTime = ?, moderatorID = ?, reason = ? WHERE userID = ?;', [unMuteTime, message.author.id, reason, member.id], (error) => {
             if(error) { console.log(error.stack); return; }
+
+            // Tell the user, that they got muted
+            embedSender.sendMessageToUser(member, 'You were muted by a moderator.',
+                `You'll be automatically unmuted at: ${unMuteTime} (UTC)`
+            );
 
             // Post a notification to the moderator channel
             embedSender.logModerator(message, 'Mute Command | Updated User',
@@ -57,6 +70,11 @@ exports.run = async(client, message, args) => {
         // resulting in the user being unmuted again
         database.run('INSERT INTO mutedUsers (userID, unMuteTime, moderatorID, reason) VALUES (?, ?, ?, ?);', [member.id, unMuteTime, message.author.id, reason], (error) => {
             if(error) { console.log(error.stack); return; }
+
+            // Tell the user, that they got muted
+            embedSender.sendMessageToUser(member, 'You were muted by a moderator.',
+                `You'll be automatically unmuted at: ${unMuteTime} (UTC)`
+            );
 
             // Add the mutedRole to the user, so they can't write anymore.
             member.addRole(mutedRole.id).then(() => {

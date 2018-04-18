@@ -7,12 +7,11 @@ exports.run = async (client, message, args) => {
     // Try to retrieve the moderator if passed
     let moderator;
     if(args.length === 1 && !message.mentions.members) {
-        embedSender.sendMessageToUser(message, 'Who\'s Muted Command', 'Specifying a user is not supported in Direct Messages.');
-    } else if(message.mentions.members) {
+        embedSender.sendMessageToAuthor(message, 'Who\'s Muted Command', 'Specifying a user is not supported in Direct Messages.');
+    } else if(args.length === 1 && message.mentions.members) {
         moderator = message.mentions.members.first();
         if(!moderator) {
-            embedSender.sendMessageToUser(message, 'Who\'s Muted Command', 'Couldn\'t find the specified moderator.');
-            return;
+            embedSender.sendMessageToAuthor(message, 'Who\'s Muted Command', 'Couldn\'t find the specified moderator.');
         }
     }
 
@@ -40,7 +39,7 @@ exports.run = async (client, message, args) => {
 
             // Post the Embed to the mod channel
             if(rows.length > 0) {
-                embedSender.sendListToUser(message, 'List of Muted Users', '', mutedUserList);
+                embedSender.sendListToAuthor(message, 'List of Muted Users', '', mutedUserList);
             }
         });
     } else {
@@ -59,7 +58,9 @@ exports.run = async (client, message, args) => {
 
             // Post the Embed to the mod channel
             if(rows.length > 0) {
-                embedSender.sendListToUser(message, 'List of Muted Users', '', mutedUserList);
+                embedSender.sendListToAuthor(message, 'List of Muted Users', '', mutedUserList);
+            } else {
+                embedSender.sendMessageToAuthor(message, 'Who\'s Muted Command', 'No member is currently muted.');
             }
         });
     }

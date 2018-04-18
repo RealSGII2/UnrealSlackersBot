@@ -5,7 +5,7 @@ const app = require('../../app.js');
 
 exports.run = (client, message, args) => {
     if(args.length != 1) {
-        embedSender.sendMessageToUser(message, 'Reload Command', 'Please specify the command you want to reload.\nE.g.: "~reload ping".');
+        embedSender.sendMessageToAuthor(message, 'Reload Command', 'Please specify the command you want to reload.\nE.g.: "~reload ping".');
         return;
     }
 
@@ -21,13 +21,13 @@ exports.run = (client, message, args) => {
     }
     // If not found, notify the bog log
     if (!actualCommand) {
-        embedSender.sendMessageToUser(message, 'Reload Command', `Couldn't find the command [${settings.serverSettings.commandPrefix}${lowerCaseCommand}].`);
+        embedSender.sendMessageToAuthor(message, 'Reload Command', `Couldn't find the command [${settings.serverSettings.commandPrefix}${lowerCaseCommand}].`);
     } else { // If found, tell the client to reload the commandfile
         app.reload(message, actualCommand).then(() => {
             embedSender.logBot(message, 'Reload Command', `Successfully reloaded command [${settings.serverSettings.commandPrefix}${lowerCaseCommand}].`)
         }).catch(error => {
             console.log(error.stack);
-            embedSender.sendMessageToUser(message, 'Reload Command', `Failed to reload command [${settings.serverSettings.commandPrefix}${lowerCaseCommand}].`);
+            embedSender.sendMessageToAuthor(message, 'Reload Command', `Failed to reload command [${settings.serverSettings.commandPrefix}${lowerCaseCommand}].`);
         });
     }
 };

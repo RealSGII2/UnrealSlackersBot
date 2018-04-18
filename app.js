@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 // Requirements
 const discord = require('discord.js');
 const client = new discord.Client();
@@ -14,9 +16,10 @@ client.login(settings.serverSettings.botToken);
 // Function to manually reload a command file
 exports.reload = async function(message, command) {
     const actualCommand = client.commands.get(command);
+    const commandName = actualCommand.help.name;
     const category = actualCommand.config.category;
-    delete require.cache[require.resolve(`./commands/${category}/${command}`)];
-    let commandFile = require(`./commands/${category}/${command}`);
+    delete require.cache[require.resolve(`./commands/${category}/${commandName}`)];
+    let commandFile = require(`./commands/${category}/${commandName}`);
 };
 
 // General Logging Event
@@ -62,7 +65,7 @@ client.getPermissionLevel = async function(message) {
     if(guild) {
         // Grab the member from the bot's guild
         const userID = message.author.id;
-        const member = await guild.fetchMember(userID);
+        const member = await guild.fetchMember(userID).catch(console.error);
 
         //const botRole = guild.roles.find('name', settings.roles.botRole);
         // if(botRole && member.roles.has(botRole.id)) {

@@ -13,13 +13,14 @@ exports.run = async (client, message, args, permissionLevel) => {
         // Go over all commands and add them as fields if the permissionLevel of the user is high enough
         client.commands.map(command => {
             // Only include commands that are available to this user's permissionlevel
-            if (permissionLevel >= command.config.permissionLevel) {
+            if (permissionLevel >= command.config.permissionLevel &&
+                command.config.enabled == true) {
                 const propertyKey = `[${command.config.category}] ${prefix}${command.help.name}`;
                 const propertyVal = `${command.help.description}`;
                 commandList.push({ 'propertyKey' : propertyKey, 'propertyVal' : propertyVal });
             }
         });
-        embedSender.sendListToUser(message, 'Command List',
+        embedSender.sendListToAuthor(message, 'Command List',
             `[Use ${prefix}help <commandname> for more details.]`, commandList
         );
 
@@ -31,7 +32,8 @@ exports.run = async (client, message, args, permissionLevel) => {
             // Retrieve the actual command object
             const actualCommand = client.commands.get(lowerCaseCommand);
             // Don't send information about commands that aren't permitted
-            if(permissionLevel >= actualCommand.config.permissionLevel) {
+            if(permissionLevel >= actualCommand.config.permissionLevel &&
+                actualCommand.config.enabled == true) {
                 var embed = new discord.RichEmbed()
                 .setTitle(`[${actualCommand.config.category}] ${prefix}${actualCommand.help.name}`)
                 .setColor(settings.messageColors.colorSuccess)
@@ -52,18 +54,19 @@ exports.run = async (client, message, args, permissionLevel) => {
             commands.forEach(cmd => {
                 const actualCommand = client.commands.get(cmd);
                 // Only include commands that are available to this user's permissionlevel
-                if (permissionLevel >= actualCommand.config.permissionLevel) {
+                if (permissionLevel >= actualCommand.config.permissionLevel &&
+                    command.actualCommand.enabled == true) {
                     const propertyKey = `[${actualCommand.config.category}] ${prefix}${actualCommand.help.name}`;
                     const propertyVal = `${actualCommand.help.description}`;
                     commandList.push({ 'propertyKey' : propertyKey, 'propertyVal' : propertyVal });
                 }
             });
             // Send the message to the actual user via direct message
-            embedSender.sendListToUser(message, `Command List for Category [${command}]`,
+            embedSender.sendListToAuthor(message, `Command List for Category [${command}]`,
                 `[Use ${prefix}help <commandname> for more details.]`, commandList
             );
         } else {
-            embedSender.sendMessageToUser(message, 'Help Command', `Couldn't find the command [${settings.serverSettings.commandPrefix}${lowerCaseCommand}].`)
+            embedSender.sendMessageToAuthor(message, 'Help Command', `Couldn't find the command [${settings.serverSettings.commandPrefix}${lowerCaseCommand}].`)
         }
     }
 };

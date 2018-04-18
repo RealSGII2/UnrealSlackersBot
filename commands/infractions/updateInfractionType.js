@@ -5,7 +5,7 @@ const path = require('path');
 
 exports.run = async (client, message, args, permissionLevel) => {
     if(args.length < 4) {
-        embedSender.sendMessageToUser(message, 'Update Infraction Type Command', 'Please specify the name, points, days and description of the infraction type.\nE.g.: "~updateInfractionType Spamming 2 90 For Spammers.".');
+        embedSender.sendMessageToAuthor(message, 'Update Infraction Type Command', 'Please specify the name, points, days and description of the infraction type.\nE.g.: "~updateInfractionType Spamming 2 90 For Spammers.".');
         return;
     }
     // Retrieve all single arguments and join the other args into the description
@@ -38,7 +38,7 @@ exports.run = async (client, message, args, permissionLevel) => {
                 );
             });
         } else {
-            embedSender.sendMessageToUser(message, 'Update Infraction Type Command', `Couldn\'t find infraction type [${typeName}].\nYou can list all infraction types with "~listInfractionTypes".`);
+            embedSender.sendMessageToAuthor(message, 'Update Infraction Type Command', `Couldn\'t find infraction type [${typeName}].\nYou can list all infraction types with "~listInfractionTypes".`);
         }
     });
 
@@ -46,7 +46,7 @@ exports.run = async (client, message, args, permissionLevel) => {
 };
 
 exports.config = {
-    enabled: true,
+    enabled: false,
     guildOnly: false,
     category: 'infractions',
     aliases: [],
